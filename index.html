@@ -1,81 +1,89 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPN MM HUB - Multi-platform guide</title>
+    <title>VPN MM HUB - Get Access Key</title>
     <style>
         body { background-color: #0d1117; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #161b22; padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #30363d; width: 90%; max-width: 450px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-        h2 { margin-top: 0; color: #58a6ff; font-size: 24px; margin-bottom: 10px; }
-        p { color: #8b949e; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
+        .card { background: #161b22; padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #30363d; width: 90%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        h2 { margin-top: 0; color: #58a6ff; font-size: 26px; margin-bottom: 10px; }
+        p { color: #8b949e; font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
         
-        .btn-group { display: flex; flex-direction: column; gap: 12px; }
-        .btn { color: white; padding: 14px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: transform 0.1s, background-color 0.2s; border: none; cursor: pointer; display: block; }
-        .btn:active { transform: scale(0.98); }
+        /* 复制按钮样式 */
+        .copy-box { background: #0d1117; border: 1px dashed #30363d; padding: 12px; border-radius: 8px; margin-bottom: 20px; word-break: break-all; font-family: monospace; font-size: 12px; color: #c9d1d9; max-height: 60px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         
-        /* 不同按钮的颜色 */
-        .btn-hiddify { background-color: #9c27b0; } /* 紫色 */
-        .btn-hiddify:hover { background-color: #ab47bc; }
-        
-        .btn-happ { background-color: #007bff; } /* 蓝色 */
-        .btn-happ:hover { background-color: #1a88ff; }
-        
-        .btn-v2box { background-color: #ff9800; } /* 橙色 */
-        .btn-v2box:hover { background-color: #ffa726; }
+        .btn-copy { background-color: #238636; color: white; padding: 16px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 16px; border: none; cursor: pointer; display: block; width: 100%; transition: 0.2s; }
+        .btn-copy:hover { background-color: #2ea043; }
+        .btn-copy:active { transform: scale(0.97); }
+        .btn-copy.success { background-color: #3fb950; }
 
-        .btn.disabled { background-color: #30363d; color: #6e7681; pointer-events: none; }
+        .btn-copy.disabled { background-color: #30363d; color: #6e7681; pointer-events: none; opacity: 0.6; }
         
-        .footer-note { margin-top: 20px; font-size: 12px; color: #484f58; }
+        .footer-note { margin-top: 25px; font-size: 13px; color: #8b949e; border-top: 1px solid #30363d; padding-top: 15px; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>VPN MM HUB</h2>
-        <p id="status-text">正在检测您的接入密钥...</p>
+        <p id="status-text">Your access key is ready.</p>
         
-        <div class="btn-group">
-            <a href="#" id="btn-hiddify" class="btn btn-hiddify disabled">Open with Hiddify</a>
-            <a href="#" id="btn-happ" class="btn btn-happ disabled">Open with Happ</a>
-            <a href="#" id="btn-v2box" class="btn btn-v2box disabled">Open with V2Box</a>
-        </div>
+        <!-- 显示缩略内容 -->
+        <div class="copy-box" id="key-preview">Waiting for key...</div>
 
-        <p class="footer-note">Note: Clicking the button will attempt to automatically redirect and import the configuration.</p>
+        <button id="copy-btn" class="btn-copy disabled">Copy Access Key</button>
+
+        <div class="footer-note">
+            After copying, open <b>Hiddify</b>, <b>V2Box</b>, or <b>Happ</b> and paste it to import.
+        </div>
     </div>
 
     <script>
-        function getUrlParameter(name) {
-            const results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-            return results ? results[1] : null;
+        // 抓取完整 Key（修复 # 备注丢失问题）
+        function getCompleteKey() {
+            const urlObj = new URL(window.location.href);
+            let key = urlObj.searchParams.get('key');
+            if (key) {
+                if (window.location.hash) {
+                    key += window.location.hash;
+                }
+                return key;
+            }
+            return null;
         }
 
-        const keyParam = getUrlParameter('key') || getUrlParameter('sub'); // 支持 key 或 sub 参数
+        const fullKey = getCompleteKey();
+        const copyBtn = document.getElementById('copy-btn');
+        const keyPreview = document.getElementById('key-preview');
         const statusText = document.getElementById('status-text');
-        
-        const btnHiddify = document.getElementById('btn-hiddify');
-        const btnHapp = document.getElementById('btn-happ');
-        const btnV2box = document.getElementById('btn-v2box');
 
-        if (keyParam) {
-            const rawKey = decodeURIComponent(keyParam);
-            statusText.innerText = "Please select the client you wish to use for import.";
+        if (fullKey) {
+            // 显示部分内容预览
+            keyPreview.innerText = fullKey.substring(0, 30) + "...";
+            copyBtn.classList.remove('disabled');
 
-            // 1. Hiddify 协议: hiddify://install-config?url=...
-            btnHiddify.href = `hiddify://install-config?url=${encodeURIComponent(rawKey)}`;
-            btnHiddify.classList.remove('disabled');
-
-            // 2. Happ 协议 (通常支持直接跳转或通用 sub 协议)
-            btnHapp.href = `happ://install-config?url=${encodeURIComponent(rawKey)}`;
-            btnHapp.classList.remove('disabled');
-
-            // 3. V2Box 协议: v2box://install-config?url=...
-            // 注意：部分版本也支持直接点击链接识别
-            btnV2box.href = `v2box://install-config?url=${encodeURIComponent(rawKey)}`;
-            btnV2box.classList.remove('disabled');
-
+            // 复制逻辑
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(fullKey).then(() => {
+                    // 视觉反馈
+                    copyBtn.innerText = "Copied!";
+                    copyBtn.classList.add('success');
+                    statusText.innerText = "Key copied to clipboard!";
+                    
+                    // 2秒后恢复原状
+                    setTimeout(() => {
+                        copyBtn.innerText = "Copy Access Key";
+                        copyBtn.classList.remove('success');
+                        statusText.innerText = "Your access key is ready.";
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert("Copy failed, please long press the key to copy manually.");
+                });
+            });
         } else {
-            statusText.innerHTML = "<span style='color:#f85149;'>错误：未找到有效的链接参数</span>";
-            document.querySelectorAll('.btn').forEach(b => b.innerText = "参数缺失");
+            statusText.innerHTML = "<span style='color:#f85149;'>Error: No access key found.</span>";
+            keyPreview.innerText = "Invalid URL";
         }
     </script>
 </body>
