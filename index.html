@@ -40,7 +40,7 @@
             <a href="#" id="btn-v2box" class="btn btn-v2box disabled">Open with V2Box</a>
         </div>
 
-        <p class="footer-note">提示：点击按钮将尝试自动跳转并导入配置</p>
+        <p class="footer-note">Note: Clicking the button will attempt to automatically redirect and import the configuration.</p>
     </div>
 
     <script>
@@ -58,7 +58,7 @@
 
         if (keyParam) {
             const rawKey = decodeURIComponent(keyParam);
-            statusText.innerText = "请选择您要使用的客户端进行导入：";
+            statusText.innerText = "Please select the client you wish to use for import.";
 
             // 1. Hiddify 协议: hiddify://install-config?url=...
             btnHiddify.href = `hiddify://install-config?url=${encodeURIComponent(rawKey)}`;
