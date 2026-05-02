@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN MM HUB - 多平台导入</title>
+    <style>
+        body { background-color: #0d1117; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #161b22; padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #30363d; width: 90%; max-width: 450px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        h2 { margin-top: 0; color: #58a6ff; font-size: 24px; margin-bottom: 10px; }
+        p { color: #8b949e; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .btn { color: white; padding: 14px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: transform 0.1s, background-color 0.2s; border: none; cursor: pointer; display: block; }
+        .btn:active { transform: scale(0.98); }
+        
+        /* 不同按钮的颜色 */
+        .btn-hiddify { background-color: #9c27b0; } /* 紫色 */
+        .btn-hiddify:hover { background-color: #ab47bc; }
+        
+        .btn-happ { background-color: #007bff; } /* 蓝色 */
+        .btn-happ:hover { background-color: #1a88ff; }
+        
+        .btn-v2box { background-color: #ff9800; } /* 橙色 */
+        .btn-v2box:hover { background-color: #ffa726; }
+
+        .btn.disabled { background-color: #30363d; color: #6e7681; pointer-events: none; }
+        
+        .footer-note { margin-top: 20px; font-size: 12px; color: #484f58; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>VPN MM HUB</h2>
+        <p id="status-text">正在检测您的接入密钥...</p>
+        
+        <div class="btn-group">
+            <a href="#" id="btn-hiddify" class="btn btn-hiddify disabled">Open with Hiddify</a>
+            <a href="#" id="btn-happ" class="btn btn-happ disabled">Open with Happ</a>
+            <a href="#" id="btn-v2box" class="btn btn-v2box disabled">Open with V2Box</a>
+        </div>
+
+        <p class="footer-note">提示：点击按钮将尝试自动跳转并导入配置</p>
+    </div>
+
+    <script>
+        function getUrlParameter(name) {
+            const results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+            return results ? results[1] : null;
+        }
+
+        const keyParam = getUrlParameter('key') || getUrlParameter('sub'); // 支持 key 或 sub 参数
+        const statusText = document.getElementById('status-text');
+        
+        const btnHiddify = document.getElementById('btn-hiddify');
+        const btnHapp = document.getElementById('btn-happ');
+        const btnV2box = document.getElementById('btn-v2box');
+
+        if (keyParam) {
+            const rawKey = decodeURIComponent(keyParam);
+            statusText.innerText = "请选择您要使用的客户端进行导入：";
+
+            // 1. Hiddify 协议: hiddify://install-config?url=...
+            btnHiddify.href = `hiddify://install-config?url=${encodeURIComponent(rawKey)}`;
+            btnHiddify.classList.remove('disabled');
+
+            // 2. Happ 协议 (通常支持直接跳转或通用 sub 协议)
+            btnHapp.href = `happ://install-config?url=${encodeURIComponent(rawKey)}`;
+            btnHapp.classList.remove('disabled');
+
+            // 3. V2Box 协议: v2box://install-config?url=...
+            // 注意：部分版本也支持直接点击链接识别
+            btnV2box.href = `v2box://install-config?url=${encodeURIComponent(rawKey)}`;
+            btnV2box.classList.remove('disabled');
+
+        } else {
+            statusText.innerHTML = "<span style='color:#f85149;'>错误：未找到有效的链接参数</span>";
+            document.querySelectorAll('.btn').forEach(b => b.innerText = "参数缺失");
+        }
+    </script>
+</body>
+</html>
